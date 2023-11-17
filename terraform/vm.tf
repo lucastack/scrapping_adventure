@@ -4,7 +4,7 @@ resource "google_compute_instance" "instance-1" {
     device_name = var.vm_name
 
     initialize_params {
-      image = "projects/debian-cloud/global/images/debian-11-bullseye-v20231115"
+      image = "projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20231101"
       size  = 30
       type  = "pd-balanced"
     }
@@ -24,9 +24,13 @@ resource "google_compute_instance" "instance-1" {
   name         = "instance-1"
 
   network_interface {
-    network = "default"
+    access_config {
+      network_tier = "PREMIUM"
+    }
+    subnetwork = "projects/${var.gcp_project}/regions/${var.region}/subnetworks/default"
   }
-  
+
+
   scheduling {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
