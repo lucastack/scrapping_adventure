@@ -62,10 +62,10 @@ resource "google_compute_resource_policy" "hourly" {
   description = "Start and stop instances"
   instance_schedule_policy {
     vm_start_schedule {
-      schedule = "10 * * * *"
+      schedule = "0 12 * * *"
     }
     vm_stop_schedule {
-      schedule = "20 * * * *"
+      schedule = "10 12 * * *"
     }
     time_zone = "Chile/Continental"
   }
