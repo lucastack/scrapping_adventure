@@ -1,4 +1,6 @@
 credentials.json
+.env
+*.zip
 .terraform*
 **.tfstate*
 *.tfvars
