@@ -12,6 +12,8 @@ resource "google_compute_instance" "instance-1" {
     mode = "READ_WRITE"
   }
 
+  metadata_startup_script = templatefile("startup_script.tftpl", { assets_file = google_storage_bucket_object.assets.name, bucket_name = var.bucket_name })
+
   can_ip_forward      = false
   deletion_protection = false
   enable_display      = false
@@ -30,7 +32,6 @@ resource "google_compute_instance" "instance-1" {
     subnetwork = "projects/${var.gcp_project}/regions/${var.region}/subnetworks/default"
   }
 
-
   scheduling {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
@@ -46,5 +47,26 @@ resource "google_compute_instance" "instance-1" {
 
   tags = ["http-server", "https-server", "lb-health-check"]
   zone = var.zone
+
+  service_account {
+    email  = var.service_account
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+
+  resource_policies = [google_compute_resource_policy.hourly.self_link]
 }
 
+resource "google_compute_resource_policy" "hourly" {
+  name        = "gce-policy"
+  region      = var.region
+  description = "Start and stop instances"
+  instance_schedule_policy {
+    vm_start_schedule {
+      schedule = "10 * * * *"
+    }
+    vm_stop_schedule {
+      schedule = "20 * * * *"
+    }
+    time_zone = "Chile/Continental"
+  }
+}

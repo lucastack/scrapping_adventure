@@ -1,0 +1,26 @@
+#!/bin/bash
+
+ENV_NAME="base"
+
+cd /home/lucas/
+
+if [ ! -f scrape.py ]; then
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo apt-get update
+    sudo apt install ./google-chrome-stable_current_amd64.deb -y
+    sudo apt-get install unzip 
+    
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py310_23.10.0-1-Linux-x86_64.sh
+    sh ./Miniconda3-py310_23.10.0-1-Linux-x86_64.sh -b -p /home/lucas/miniconda3
+
+    source miniconda3/bin/activate $ENV_NAME
+    gsutil cp gs://${bucket_name}/${assets_file} .
+    unzip ${assets_file} 
+    pip install -r requirements.txt
+else
+    source miniconda3/bin/activate $ENV_NAME
+fi
+
+python scrape.py 
+
+conda deactivate
