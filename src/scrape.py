@@ -1,3 +1,4 @@
+from google.cloud import storage
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -6,6 +7,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 from dotenv import load_dotenv
 
 import time
+import datetime
 import os
 
 load_dotenv()
@@ -13,6 +15,7 @@ load_dotenv()
 
 BASE_URL = os.getenv("BASE_URL")
 SEARCH_QUERY = os.getenv("SEARCH_QUERY")
+SCRAPPING_RESULTS_BUCKET = os.getenv("SCRAPPING_RESULTS_BUCKET")
 
 print(f"BASE_URL: {BASE_URL}")
 print(f"SEARCH_QUERY: {SEARCH_QUERY}")
@@ -83,12 +86,20 @@ while actual_page < total_pages:
         print("Encountered a stale element, retrying...")
         continue  # This will retry the current page
 
+driver.quit()
 
-filename = str(int(time.time()))
+now_datetime = datetime.datetime.now()
+filename = now_datetime.strftime("%H%M%d%m%y") + ".txt"
+
 all_properties = list(set(all_properties))
 print(f"Found {len(all_properties)} to save in filename {filename}")
 
 with open(filename, mode="w") as file:
     file.write("\n".join(all_properties))
 
-driver.quit()
+
+storage_client = storage.Client()
+bucket = storage_client.get_bucket(SCRAPPING_RESULTS_BUCKET)
+
+blob = bucket.blob(filename)
+blob.upload_from_filename(filename)
